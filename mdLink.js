@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 
-function isMarkdownFile(filePath) {
+function isMarkdownExtension(filePath) {
   //extensiones válidas
   const markdownExtensions = ['.md', '.mkd', '.mdwn', '.mdown', '.mdtxt', '.mdtext', '.markdown', '.text'];
   //obtiene la extension del archivo
@@ -18,8 +18,8 @@ function mdLinks(filePath) {
         const absolutePath = path.resolve(filePath);
 
         // Verificar si el archivo es Markdown
-        if (!isMarkdownFile(absolutePath)) {
-          reject(new Error('El archivo no es de tipo Markdown'));
+        if (!isMarkdownExtension(absolutePath)) {
+          reject(new Error('El archivo no es Markdown'));
           return;
         }
 
@@ -38,6 +38,10 @@ function mdLinks(filePath) {
             }
 
             resolve(links);
+            /* resolve({
+              filePath: absolutePath,
+              links: links
+            }); */
           })
           .catch(error => reject(error));
       })
