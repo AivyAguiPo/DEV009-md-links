@@ -1,5 +1,6 @@
-const fs = require('fs').promises;
+const fs = require('fs/promises');
 const path = require('path');
+// const isMarkdownExtension = require('./data.js');
 
 function isMarkdownExtension(filePath) {
   //extensiones válidas
@@ -8,7 +9,6 @@ function isMarkdownExtension(filePath) {
   const ext = path.extname(filePath);
   return markdownExtensions.includes(ext);
 }
-
 function mdLinks(filePath) {
   return new Promise((resolve, reject) => {
     // Comprobar si la ruta existe
@@ -19,8 +19,8 @@ function mdLinks(filePath) {
 
         // Verificar si el archivo es Markdown
         if (!isMarkdownExtension(absolutePath)) {
-          reject(new Error('El archivo no es Markdown'));
-          return;
+         return reject(new Error('El archivo no es Markdown'));
+          
         }
 
         // Leer el contenido del archivo utf-8 codificación a la hora de leer un archivo
@@ -29,12 +29,12 @@ function mdLinks(filePath) {
             const links = [];
 
             // Expresión regular para encontrar enlaces en formato [texto](url)
-            const linkRegex = /\[([^\]]+)\]\((http[s]?:\/\/[^\)]+)\)/g;
-            let match = linkRegex.exec(content);
+            const linksFormat = /\[([^\]]+)\]\((http[s]?:\/\/[^\)]+)\)/g;
+            let match = linksFormat.exec(content);
             while (match !== null) {
               const [, text, url] = match;
               links.push({ text, url });
-              match = linkRegex.exec(content);
+              match = linksFormat.exec(content);
             }
 
             resolve(links);
@@ -45,14 +45,19 @@ function mdLinks(filePath) {
           })
           .catch(error => reject(error));
       })
-      .catch(error => reject(error));
+      .catch(error => reject('La ruta no existe'));
   });
 }
 
-mdLinks('./README.md')
+module.exports = { mdLinks };
+
+
+
+  /* mdLinks('README.txt')
   .then(links => {
     console.log('Enlaces encontrados:', links);
   })
   .catch(err => {
     console.error('Error:', err);
-  });
+  });*/
+ 
