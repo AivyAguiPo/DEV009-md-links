@@ -1,6 +1,6 @@
-const fs = require('fs/promises');
+const fs = require('fs');
 const path = require('path');
-// const isMarkdownExtension = require('./data.js');
+//const isMarkdownExtension = require('./data.js');
 
 function isMarkdownExtension(filePath) {
   //extensiones válidas
@@ -12,40 +12,41 @@ function isMarkdownExtension(filePath) {
 function mdLinks(filePath) {
   return new Promise((resolve, reject) => {
     // Comprobar si la ruta existe
-    fs.access(filePath)
-      .then(() => {
-        // Transformar la ruta a absoluta
-        const absolutePath = path.resolve(filePath);
+    // Transformar la ruta a absoluta
+    const file = path.resolve(filePath);
 
-        // Verificar si el archivo es Markdown
-        if (!isMarkdownExtension(absolutePath)) {
-         return reject(new Error('El archivo no es Markdown'));
-          
-        }
+    // Verificar si el archivo es Markdown
+    if (!isMarkdownExtension(file)) {
+      return reject(new Error('El archivo no es Markdown'));
 
-        // Leer el contenido del archivo utf-8 codificación a la hora de leer un archivo
-        fs.readFile(absolutePath, 'utf-8')
-          .then(content => {
-            const links = [];
+    }
+    if (!fs.existsSync(file)) {
+      return reject(new Error('La ruta no existe'));
+    }
+     // Leer el contenido del archivo utf-8 codificado
+     fs.readFile(file, 'utf-8', (err, content) => {
+      if (err) {
+        return reject(err);
+      }
 
-            // Expresión regular para encontrar enlaces en formato [texto](url)
-            const linksFormat = /\[([^\]]+)\]\((http[s]?:\/\/[^\)]+)\)/g;
-            let match = linksFormat.exec(content);
-            while (match !== null) {
-              const [, text, url] = match;
-              links.push({ text, url });
-              match = linksFormat.exec(content);
-            }
+      const links = [];
 
-            resolve(links);
-            /* resolve({
-              filePath: absolutePath,
-              links: links
-            }); */
-          })
-          .catch(error => reject(error));
-      })
-      .catch(error => reject('La ruta no existe'));
+      // Expresión regular para encontrar enlaces en formato [texto](url)
+      const linksFormat = /\[([^\]]+)\]\((http[s]?:\/\/[^\)]+)\)/g;
+      let match = linksFormat.exec(content);
+      while (match !== null) {
+        const [, text, href] = match;
+        links.push({ href, text, file });
+        match = linksFormat.exec(content);
+      }
+
+      resolve(links);
+      /* resolve({
+        filePath: absolutePath,
+        links: links
+      }); */
+    });
+
   });
 }
 
@@ -53,11 +54,3 @@ module.exports = { mdLinks };
 
 
 
-  /* mdLinks('README.txt')
-  .then(links => {
-    console.log('Enlaces encontrados:', links);
-  })
-  .catch(err => {
-    console.error('Error:', err);
-  });*/
- 

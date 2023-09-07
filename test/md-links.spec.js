@@ -1,35 +1,36 @@
+const fs = require('fs/promises');
 const { mdLinks } = require('../mdLink');
 const path = require('path');
 
 describe('mdLinks', () => {
+  it('debería rechazar la promesa si el archivo no es Markdown', () => {
+    const filePath = 'path/to/nonmarkdownfile.txt';
 
-  it('Deberia devolver una promesa', () => {
-    // console.log('FIX ME!');
-    const result = mdLinks('README.md');
-    expect(result).toBeInstanceOf(Promise);
+    return expect(mdLinks(filePath)).rejects.toThrow('El archivo no es Markdown');
   });
-  it('Debe rechazar la promesa si path no existe', () => {
-    return mdLinks('noexiste.md').catch((error) => {
-      expect(error).toBe('La ruta no existe');
-    })
-  })
 
-  /*it('El archivo no es Markdown', () => {
+  it('debería rechazar la promesa si la ruta no existe', () => {
+    const filePath = 'path/to/nonexistentfile.md';
 
-  }) */
-it('El archivo es Markdown', () => {
-    // Llama a la función mdLinks con la ruta de un archivo Markdown
-    const result = mdLinks('archivo.md'); // Ajusta la ruta según tus necesidades
-
-    // Verifica si result contiene la extensión .md o alguna extensión válida de Markdown
-    expect(result).toBeTruthy();
+    return expect(mdLinks(filePath)).rejects.toThrow('La ruta no existe');
   });
-  it('Debería rechazar la promesa si el archivo no es Markdown', () => {
-    const nonMarkdownFilePath = 'path/to/nonmarkdownfile.txt';
-    return mdLinks(nonMarkdownFilePath)
-      .catch(error => {
-        expect(error( new Error)).toBe('El archivo no es Markdown'); // Verifica el mensaje de error
-      });
+
+  it('debería resolver la promesa con los enlaces encontrados en el archivo Markdown', async () => {
+    const filePath = 'README.md'; // Reemplaza con una ruta de archivo que contenga enlaces Markdown válidos.
+  
+    // Utilizamos async/await para esperar la resolución de la promesa
+    const links = await mdLinks(filePath);
+  
+    // Verificamos que 'links' sea un arreglo no vacío
+    expect(Array.isArray(links)).toBeTruthy();
+    expect(links.length).toBeGreaterThan(0);
+  
+    // Verificamos que todos los enlaces tengan las propiedades adecuadas (href, text, file)
+    links.forEach(link => {
+      expect(link).toHaveProperty('href');
+      expect(link).toHaveProperty('text');
+      expect(link).toHaveProperty('file');
+    });
   });
-     
 });
+  

@@ -1,10 +1,10 @@
+const { mdLinks } = require('./mdLink');
 
-/* const { mdLinks } = require('../mdLink');
-
-mdLinks('README.md')
+ mdLinks('./data.js')
   .then(links => {
     console.log('Enlaces encontrados:', links);
   })
   .catch(err => {
     console.error('Error:', err);
-  }); */
+  });
+ 
