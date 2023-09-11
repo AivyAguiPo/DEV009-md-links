@@ -1,17 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-//const isMarkdownExtension = require('./data.js');
+const {isMarkdownExtension,validateLink}= require('./data.js');
+const axios = require('axios');
 
-function isMarkdownExtension(filePath) {
-  //extensiones válidas
-  const markdownExtensions = ['.md', '.mkd', '.mdwn', '.mdown', '.mdtxt', '.mdtext', '.markdown', '.text'];
-  //obtiene la extension del archivo
-  const ext = path.extname(filePath);
-  return markdownExtensions.includes(ext);
-}
-function mdLinks(filePath) {
+function mdLinks(filePath, validate) {
   return new Promise((resolve, reject) => {
-    // Comprobar si la ruta existe
     // Transformar la ruta a absoluta
     const file = path.resolve(filePath);
 
@@ -20,11 +13,12 @@ function mdLinks(filePath) {
       return reject(new Error('El archivo no es Markdown'));
 
     }
+    // Comprobar si la ruta existe
     if (!fs.existsSync(file)) {
       return reject(new Error('La ruta no existe'));
     }
-     // Leer el contenido del archivo utf-8 codificado
-     fs.readFile(file, 'utf-8', (err, content) => {
+    // Leer el contenido del archivo utf-8 codificado,argumento content =contenido de la data
+    fs.readFile(file, 'utf-8', (err, content) => {
       if (err) {
         return reject(err);
       }
@@ -36,18 +30,22 @@ function mdLinks(filePath) {
       let match = linksFormat.exec(content);
       while (match !== null) {
         const [, text, href] = match;
-        links.push({ href, text, file });
+        if (validate) {
+          links.push(validateLink({ href, text, file }));
+        } else {
+          links.push({ href, text, file });
+        }
         match = linksFormat.exec(content);
-      }
-
-      resolve(links);
-      /* resolve({
-        filePath: absolutePath,
-        links: links
-      }); */
-    });
-
+    }
+      Promise.all(links)
+        .then((validateLink) => {
+          resolve(validateLink);
+        })
+        .catch((error) => {
+          reject(error);
+        });
   });
+});
 }
 
 module.exports = { mdLinks };
