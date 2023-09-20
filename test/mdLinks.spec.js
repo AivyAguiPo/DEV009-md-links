@@ -5,12 +5,12 @@ const path = require('path');
 describe('mdLinks', () => {
   it('debería rechazar la promesa si el archivo no es Markdown', () => {
     const filePath = 'path/to/nonmarkdownfile.txt';
-   expect(mdLinks(filePath)).rejects.toThrow('El archivo no es Markdown');
+   expect(mdLinks(filePath)).rejects.toEqual('La ruta "path/to/nonmarkdownfile.txt" no existe.');
   });
 
   it('debería rechazar la promesa si la ruta no existe', () => {
     const filePath = 'path/to/nonexistentfile.md';
-   expect(mdLinks(filePath)).rejects.toThrow('La ruta no existe');
+   expect(mdLinks(filePath)).rejects.toEqual('La ruta \"path/to/nonexistentfile.md\" no existe.');
   });
 
   it('debería resolver la promesa con los enlaces encontrados en el archivo Markdown', async () => {
@@ -27,7 +27,7 @@ describe('mdLinks', () => {
     links.forEach(link => {
       expect(link).toHaveProperty('href');
       expect(link).toHaveProperty('text');
-      expect(link).toHaveProperty('file');
+      expect(link).toHaveProperty('filePath');
     });
   });
 });

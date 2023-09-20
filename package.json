@@ -1,6 +1,12 @@
 {
   "name": "md-links",
   "version": "0.1.0",
+  "description": "Libreria Obtener y Validar links",
+  "author": "Aivy Aguirre Ponce",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AivyAguiPo/DEV009-md-links"
+  },
   "engines": {
     "node": ">=16.x"
   },
