@@ -10,15 +10,15 @@ mdLinks(path,validate)
   .then(links => {
     if (stats && validate) {
       const statsResult = calculateLinkStats(links);
-      console.log('Total de enlaces:', statsResult.total);
-      console.log('Enlaces únicos:', statsResult.unique);
-      console.log('Enlaces rotos:', statsResult.broken);
+      console.log('✅ Total de enlaces:', statsResult.total);
+      console.log('🔖 Enlaces únicos:', statsResult.unique);
+      console.log('❌ Enlaces rotos:', statsResult.broken);
     } else if (stats) {
       const statsResult = calculateLinkStats(links);
-      console.log('Total de enlaces:', statsResult.total);
-      console.log('Enlaces únicos:', statsResult.unique);
+      console.log('✅ Total de enlaces:', statsResult.total);
+      console.log('🔖 Enlaces únicos:', statsResult.unique);
     } else {
-      console.log('Enlaces encontrados:', links);
+      console.log('🔎 Enlaces encontrados:', links);
     }
   })
   .catch(err => {
