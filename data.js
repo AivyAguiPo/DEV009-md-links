@@ -17,44 +17,48 @@ function transformPathAbsolute(relativePath) {
 }
 
 function isFile(path) {
-      if (!fs.existsSync(path)) {
-          throw new Error(`La ruta "${path}" no existe.`);
-        }
-      
-        const stats = fs.statSync(path);
-        return stats.isFile();
-      }
-  function isDirectory(path) {
-        // Recordar retornar true si es directorio
-        const response = fs.statSync(path);
-        if (response.isDirectory())
-            return true;
-    }
+  if (!fs.existsSync(path)) {
+    throw new Error(`La ruta "${path}" no existe.`);
+  }
+  const stats = fs.statSync(path);
+  return stats.isFile();
+}
+
+function isDirectory(path) {
+  // Recordar retornar true si es directorio
+  const response = fs.statSync(path);
+  if (response.isDirectory())
+    return true;
+}
 
 function getFiles(directoryPath, extension) {
-  // Use fs.readdirSync to get a list of all files in the directory.
   //TODO: Validar si el directorio existe
+  let filesDirectory = [];
   const files = fs.readdirSync(directoryPath);
-
-  // Use path.extname to filter the files by their extension.
-  const filteredFiles = files.filter((file) => {
+  const fullPaths = files.map((file) => path.join(directoryPath, file));
+  fullPaths.forEach(file => {
+    if (isFile(file)) {
       const ext = path.extname(file);
-      return ext === extension;
-  });
-  // Map the filtered file names to their full paths.
-  const fullPaths = filteredFiles.map((file) => path.join(directoryPath, file));
+      if(ext === extension) 
+      filesDirectory.push(file)
+    }
+    if (isDirectory(file)) {
+      const filesSubDirectory = getFiles(file, '.md');
+      filesDirectory = filesDirectory.concat(filesSubDirectory)
+    }
 
-  return fullPaths;
+  });
+  return filesDirectory;
 }
 
 function readFile(filePath) {
   return new Promise((resolve, reject) => {
-      fs.readFile(filePath, 'utf-8', (err, content) => {
-          if (err) {
-              return reject(err);
-          }
-          return resolve({ content, filePath })
-      });
+    fs.readFile(filePath, 'utf-8', (err, content) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve({ content, filePath })
+    });
   })
 }
 
@@ -64,28 +68,40 @@ function getLinks(contentFile) {
   const linksFormat = /\[([^\]]+)\]\((http[s]?:\/\/[^\)]+)\)/g;
   let match = linksFormat.exec(contentFile.content);
   while (match !== null) {
-      const [, text, href] = match;
-      links.push({ href, text });
-      match = linksFormat.exec(contentFile.content);
+    const [, text, href] = match;
+    links.push({ href, text });
+    match = linksFormat.exec(contentFile.content);
   }
   return { links, filePath: contentFile.filePath }
 }
 
 function validateLinks(link, filePath) {
   return axios.head(link.href)
-      .then((response) => Object.assign({}, {
-          filePath,
-          link: link.href,
-          text: link.text,
-          status: response.status,
-          ok: response.status >= 200 && response.status < 400 ? 'OK' : 'Fail',
-      }))
-      .catch((error) => Object.assign({}, {
-          filePath,
-          link: link.href,
-          text: link.text,
-          status: error.response ? error.response.status : 'N/A',
-          ok: 'Fail',
-      }));
+    .then((response) => Object.assign({}, {
+      filePath,
+      href: link.href,
+      text: link.text,
+      status: response.status,
+      ok: response.status >= 200 && response.status < 400 ? 'OK' : 'Fail',
+    }))
+    .catch((error) => Object.assign({}, {
+      filePath,
+      href: link.href,
+      text: link.text,
+      status: error.response ? error.response.status : 404,
+      ok: 'Fail',
+    }));
 }
-module.exports = { isMarkdownExtension, transformPathAbsolute, isFile, isDirectory, getFiles, readFile, getLinks, validateLinks };
+function calculateLinkStats(links) {
+  const totalLinks = links.length;
+  const set = new Set(links.map(link => link.href));
+  const uniqueLinks = set.size;
+  const brokenLinks = links.filter(link => link.ok === 'Fail').length;
+
+  return {
+    total: totalLinks,
+    unique: uniqueLinks,
+    broken: brokenLinks,
+  };
+}
+module.exports = { isMarkdownExtension, transformPathAbsolute, isFile, isDirectory, getFiles, readFile, getLinks, validateLinks, calculateLinkStats };

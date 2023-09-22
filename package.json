@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/AivyAguiPo/DEV009-md-links"
   },
+  "bin": {
+    "mdLinks": "./cli.js"
+  },
   "engines": {
     "node": ">=16.x"
   },
