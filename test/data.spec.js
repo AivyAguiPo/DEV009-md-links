@@ -1,4 +1,4 @@
-const { getFiles, readFile, getLinks, validateLinks, calculateLinkStats } = require('../data')
+const { getFiles, getLinks, validateLinks, calculateLinkStats } = require('../data')
 const { mdLinks } = require('../mdLink');
 const axios = require('axios');
 jest.mock('axios');
